@@ -40,26 +40,31 @@ def Arguments(argv):
 
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0.0')
     parser.add_argument('-c', '--challenge', type=str, dest='NUMBER', required=False, help="set challenge to Repsonder conf")
+    parser.add_argument('-m', '--machinename', type=str, dest='MACHINENAME', required=False, help="set machine name to settings.py")
+    parser.add_argument('-d', '--domain', type=str, dest='DOMAIN', required=False, help="set domain name to settings.py")
+    parser.add_argument('-u', '--username', type=str, dest='USERNAME', required=False, help="set username to settings.py")
     parser.add_argument('--cleardb', action='store_true', required=False, help="clear Responder.db data")
-    parser.add_argument('--setsql', type=str, dest='SQLSWITCH', required=False, help="set SQL server ON/OFF to Responder conf")
-    parser.add_argument('--setsmb', type=str, dest='SMBSWITCH', required=False, help="set SMB server ON/OFF to Responder conf")
-    parser.add_argument('--setrdp', type=str, dest='RDPSWITCH', required=False, help="set RDP server ON/OFF to Responder conf")
-    parser.add_argument('--setkerberos', type=str, dest='KERBEROSSWITCH', required=False, help="set Kerberos server ON/OFF to Responder conf")
-    parser.add_argument('--setftp', type=str, dest='FTPSWITCH', required=False, help="set FTP server ON/OFF to Responder conf")
-    parser.add_argument('--setpop', type=str, dest='POPSWITCH', required=False, help="set POP server ON/OFF to Responder conf")
-    parser.add_argument('--setsmtp', type=str, dest='SMTPSWITCH', required=False, help="set SMTP server ON/OFF to Responder conf")
-    parser.add_argument('--setimap', type=str, dest='IMAPSWITCH', required=False, help="set IMAP server ON/OFF to Responder conf")
-    parser.add_argument('--sethttp', type=str, dest='HTTPSWITCH', required=False, help="set HTTP server ON/OFF to Responder conf")
-    parser.add_argument('--sethttps', type=str, dest='HTTPSSWITCH', required=False, help="set HTTPS server ON/OFF to Responder conf")
-    parser.add_argument('--setdns', type=str, dest='DNSSWITCH', required=False, help="set DNS server ON/OFF to Responder conf")
-    parser.add_argument('--setldap', type=str, dest='LDAPSWITCH', required=False, help="set LDAP server ON/OFF to Responder conf")
-    parser.add_argument('--setdcerpc', type=str, dest='DCERPCSWITCH', required=False, help="set DCERPC server ON/OFF to Responder conf")
-    parser.add_argument('--setwinrm', type=str, dest='WINRMSWITCH', required=False, help="set WINRM server ON/OFF to Responder conf")
+    parser.add_argument('--sql', type=str, dest='SQLSWITCH', required=False, help="set SQL server ON/OFF to Responder conf")
+    parser.add_argument('--smb', type=str, dest='SMBSWITCH', required=False, help="set SMB server ON/OFF to Responder conf")
+    parser.add_argument('--rdp', type=str, dest='RDPSWITCH', required=False, help="set RDP server ON/OFF to Responder conf")
+    parser.add_argument('--kerberos', type=str, dest='KERBEROSSWITCH', required=False, help="set Kerberos server ON/OFF to Responder conf")
+    parser.add_argument('--ftp', type=str, dest='FTPSWITCH', required=False, help="set FTP server ON/OFF to Responder conf")
+    parser.add_argument('--pop', type=str, dest='POPSWITCH', required=False, help="set POP server ON/OFF to Responder conf")
+    parser.add_argument('--smtp', type=str, dest='SMTPSWITCH', required=False, help="set SMTP server ON/OFF to Responder conf")
+    parser.add_argument('--imap', type=str, dest='IMAPSWITCH', required=False, help="set IMAP server ON/OFF to Responder conf")
+    parser.add_argument('--http', type=str, dest='HTTPSWITCH', required=False, help="set HTTP server ON/OFF to Responder conf")
+    parser.add_argument('--https', type=str, dest='HTTPSSWITCH', required=False, help="set HTTPS server ON/OFF to Responder conf")
+    parser.add_argument('--dns', type=str, dest='DNSSWITCH', required=False, help="set DNS server ON/OFF to Responder conf")
+    parser.add_argument('--ldap', type=str, dest='LDAPSWITCH', required=False, help="set LDAP server ON/OFF to Responder conf")
+    parser.add_argument('--dcerpc', type=str, dest='DCERPCSWITCH', required=False, help="set DCERPC server ON/OFF to Responder conf")
+    parser.add_argument('--winrm', type=str, dest='WINRMSWITCH', required=False, help="set WINRM server ON/OFF to Responder conf")
     parser.add_argument('--setdb', type=str, dest='DATABASENAME', required=False, help="set Database file to Responder conf")
     parser.add_argument('--sessionlog', type=str, dest='SESSIONLOG', required=False, help="set Session log file to Responder conf"),
     parser.add_argument('--poisonlog', type=str, dest='POISONERSLOG', required=False, help="set Poisoners log file to Responder conf")
     parser.add_argument('--analyzelog', type=str, dest='ANALYZELOG', required=False, help="set Analyze mode log file to Responder conf")
     parser.add_argument('--configdumplog', type=str, dest='CONFIGDUMPLOG', required=False, help="set Confing Dump log file to Responder conf")
+    parser.add_argument('--sslcert', type=str, dest='SSLCERT', required=False, help="set SSL Certificate to Responder conf")
+    parser.add_argument('--sslkey', type=str, dest='SSLKEY', required=False, help="set SSL Key to Responder conf")
 
     args = parser.parse_args()
 
@@ -152,6 +157,26 @@ def ModifyFile(foundFile, searchingWord, candidateValue, statement):
 
         print("[+] " + statement + " has been set to " + "'" + candidateValue + "'" + " in " + foundFile + "...\n")
 
+#ModifyFile function
+def ModifyFileWithTab(foundFile, searchingWord, candidateValue, statement):
+    #Read file and find line
+        with open(foundFile, 'r') as file:
+            for index, line in enumerate(file):
+                if searchingWord in line:
+                    lineNumber = index + 1
+
+        #Read file and save tha value to specific line
+        with open(foundFile, 'r') as file:
+            fileContents = file.readlines()
+        
+        fileContents[lineNumber - 1] = searchingWord + "=   '" + candidateValue + "'" + "\n"
+
+        #Modify changes
+        with open(foundFile, 'w') as file:
+            file.writelines(fileContents)
+
+        print("[+] " + statement + " has been set to " + "'" + candidateValue + "'" + " in " + foundFile + "...\n")
+
 #DetermineSwitch function
 def DetermineSwitch(statement, candidateValue):
     if candidateValue.lower() != "on" and candidateValue.lower() != "off":
@@ -191,7 +216,20 @@ def ConfigureString(keyword, optionNumber):
             statement = "Database"
         case 4:
             statement = "Challenge"
+        case 5:
+            statement = "SSLCert"
+        case 6:
+            statement = "SSLKey"
     
+    return searchingWord, statement
+
+#ConfigureStringWithTab function
+def ConfigureStringWithTab(keyword):
+    searchingWord = "\t\t" + keyword
+
+    #Splitting keyword
+    splitKeyword = keyword.split(".")
+    statement = splitKeyword[1]
 
     return searchingWord, statement
 
@@ -202,6 +240,20 @@ def ConfigureValues(foundFile, searchingWord, candidateValue, statement):
 
     #Call function named ModifyFile
     ModifyFile(foundFile, searchingWord, candidateValue, statement)
+
+#ConfigureValuesWithTab function
+def ConfigureValuesWithTab(foundFile, searchingWord, candidateValue, statement):
+    #Call function FindString
+    FindString(foundFile, searchingWord)
+
+    #Call function named ModifyFile
+    ModifyFileWithTab(foundFile, searchingWord, candidateValue, statement)
+
+#DetermineChallenge function
+def DetermineChallenge(candidateValue):
+    if len(candidateValue) != 16:
+        print("[!] The challenge must be exactly 16 chars long.\n\nExample: 1122334455667788\n")
+        exit(1) 
 
 #main function
 def main():
@@ -217,12 +269,13 @@ def main():
     foundOS = FindOS(candidateOS)
 
     #Call function named SearchFile
-    foundFile = SearchFile(foundOS, "test.txt")
+    foundFile = SearchFile(foundOS, "Responder.conf")
+
+    #Call function named SearchFile
+    foundFileSettings = SearchFile(foundOS, "settings.py")
 
     #Clear DB section
     if arguments.cleardb:
-        candidateOS = system().lower()
-
         #Call function named SearchFile
         foundFileDB = SearchFile(foundOS, "Responder.db")
 
@@ -230,13 +283,66 @@ def main():
         remove(foundFileDB)
 
         print("[+] " + foundFileDB + " has been deleted...\n")
+    
+    #Machine Name Section
+    if arguments.MACHINENAME:
+        candidateValue = arguments.MACHINENAME
+
+        #Call function named ConfigureString
+        configuredStringsWithTab = ConfigureStringWithTab("self.MachineName")
+
+        #Call function ConfigureValues
+        ConfigureValuesWithTab(foundFileSettings, configuredStringsWithTab[0], candidateValue, configuredStringsWithTab[1])
+
+    #Domain Name Section
+    if arguments.DOMAIN:
+        candidateValue = arguments.DOMAIN
+
+        #Call function named ConfigureString
+        configuredStringsWithTab = ConfigureStringWithTab("self.DomainName")
+
+        #Call function ConfigureValues
+        ConfigureValuesWithTab(foundFileSettings, configuredStringsWithTab[0], candidateValue, configuredStringsWithTab[1])
+    
+    #Username Section
+    if arguments.USERNAME:
+        candidateValue = arguments.USERNAME
+
+        #Call function named ConfigureString
+        configuredStringsWithTab = ConfigureStringWithTab("self.Username")
+
+        #Call function ConfigureValues
+        ConfigureValuesWithTab(foundFileSettings, configuredStringsWithTab[0], candidateValue, configuredStringsWithTab[1])
 
     #Challenge section
     if arguments.NUMBER:
         candidateValue = arguments.NUMBER
 
+        #Call function named DetermineChallenge
+        DetermineChallenge(candidateValue)
+
         #Call function named ConfigureString
         configuredStrings = ConfigureString("Challenge", 4)
+
+        #Call function ConfigureValues
+        ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
+
+    #SSLCert section
+    if arguments.SSLCERT:
+        candidateValue = arguments.SSLCERT
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("SSLCert", 5)
+
+        #Call function ConfigureValues
+        ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
+
+    #SSLKey section
+    if arguments.SSLKEY:
+        candidateValue = arguments.SSLKEY
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("SSLKey", 6)
 
         #Call function ConfigureValues
         ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
