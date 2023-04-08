@@ -7,7 +7,7 @@
 
 import argparse
 from platform import system
-from os import walk, path, remove, rename
+from os import walk, path, remove
 from sys import exit, argv
 
 #Global variables
@@ -16,7 +16,6 @@ __team__ = "@villains_team"
 __version__ = "1.0.0"
 __license__ = "MIT"
 __github__ = "https://github.com/villains-team/Responder-Parser"
-
 __ascii__ = '''
 
 
@@ -40,8 +39,22 @@ def Arguments(argv):
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, prog="Responder-Parser", usage='%(prog)s [options]')
 
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0.0')
-    parser.add_argument('-c', '--challenge', type=str, dest='NUMBER', required=False, help="set challenge to Repsonder")
+    parser.add_argument('-c', '--challenge', type=str, dest='NUMBER', required=False, help="set challenge to Repsonder conf")
     parser.add_argument('--cleardb', action='store_true', required=False, help="clear Responder.db data")
+    parser.add_argument('--setsql', type=str, dest='SQLSWITCH', required=False, help="set SQL server ON/OFF to Responder conf")
+    parser.add_argument('--setsmb', type=str, dest='SMBSWITCH', required=False, help="set SMB server ON/OFF to Responder conf")
+    parser.add_argument('--setrdp', type=str, dest='RDPSWITCH', required=False, help="set RDP server ON/OFF to Responder conf")
+    parser.add_argument('--setkerberos', type=str, dest='KERBEROSSWITCH', required=False, help="set Kerberos server ON/OFF to Responder conf")
+    parser.add_argument('--setftp', type=str, dest='FTPSWITCH', required=False, help="set FTP server ON/OFF to Responder conf")
+    parser.add_argument('--setpop', type=str, dest='POPSWITCH', required=False, help="set POP server ON/OFF to Responder conf")
+    parser.add_argument('--setsmtp', type=str, dest='SMTPSWITCH', required=False, help="set SMTP server ON/OFF to Responder conf")
+    parser.add_argument('--setimap', type=str, dest='IMAPSWITCH', required=False, help="set IMAP server ON/OFF to Responder conf")
+    parser.add_argument('--sethttp', type=str, dest='HTTPSWITCH', required=False, help="set HTTP server ON/OFF to Responder conf")
+    parser.add_argument('--sethttps', type=str, dest='HTTPSSWITCH', required=False, help="set HTTPS server ON/OFF to Responder conf")
+    parser.add_argument('--setdns', type=str, dest='DNSSWITCH', required=False, help="set DNS server ON/OFF to Responder conf")
+    parser.add_argument('--setldap', type=str, dest='LDAPSWITCH', required=False, help="set LDAP server ON/OFF to Responder conf")
+    parser.add_argument('--setdcerpc', type=str, dest='DCERPCSWITCH', required=False, help="set DCERPC server ON/OFF to Responder conf")
+    parser.add_argument('--setwinrm', type=str, dest='WINRMSWITCH', required=False, help="set WINRM server ON/OFF to Responder conf")
     parser.add_argument('--setdb', type=str, dest='DATABASENAME', required=False, help="set Database file to Responder conf")
     parser.add_argument('--sessionlog', type=str, dest='SESSIONLOG', required=False, help="set Session log file to Responder conf"),
     parser.add_argument('--poisonlog', type=str, dest='POISONERSLOG', required=False, help="set Poisoners log file to Responder conf")
@@ -139,6 +152,57 @@ def ModifyFile(foundFile, searchingWord, candidateValue, statement):
 
         print("[+] " + statement + " has been set to " + "'" + candidateValue + "'" + " in " + foundFile + "...\n")
 
+#DetermineSwitch function
+def DetermineSwitch(statement, candidateValue):
+    if candidateValue.lower() != "on" and candidateValue.lower() != "off":
+        newValue = "nothing"
+        print("[!] " + statement + " parameter accepts only ON/OFF values...")
+        exit(1)
+
+    match candidateValue.lower():
+        case "on":
+            newValue = "On"
+        case "off":
+            newValue = "Off"
+        
+    return newValue
+
+#ConfigureOnOff function
+def ConfigureOnOff(foundFile, searchingWord, candidateServer, statement):
+    #Call function named DetermineSwitch
+    foundSwitch = DetermineSwitch(statement, candidateServer)
+
+    #Call function FindString
+    FindString(foundFile, searchingWord)
+
+    #Call function named ModifyFile
+    ModifyFile(foundFile, searchingWord, foundSwitch, statement)
+
+#ConfigureString function
+def ConfigureString(keyword, optionNumber):
+    searchingWord = keyword + " = "
+
+    match optionNumber:
+        case 1:
+            statement =  keyword + " Server"
+        case 2:
+            statement =  keyword
+        case 3:
+            statement = "Database"
+        case 4:
+            statement = "Challenge"
+    
+
+    return searchingWord, statement
+
+#ConfigureValues function
+def ConfigureValues(foundFile, searchingWord, candidateValue, statement):
+    #Call function FindString
+    FindString(foundFile, searchingWord)
+
+    #Call function named ModifyFile
+    ModifyFile(foundFile, searchingWord, candidateValue, statement)
+
 #main function
 def main():
     #Call function named Arguments
@@ -169,75 +233,203 @@ def main():
 
     #Challenge section
     if arguments.NUMBER:
-        candidateChallenge = arguments.NUMBER
-        searchingWord = "Challenge = "
-        statement = "Challenge"
+        candidateValue = arguments.NUMBER
 
-        #Call function FindString
-        FindString(foundFile, searchingWord)
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("Challenge", 4)
 
-        #Call function named ModifyFile
-        ModifyFile(foundFile, searchingWord, candidateChallenge, statement)
+        #Call function ConfigureValues
+        ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
 
     #DatabaseName Section
     if arguments.DATABASENAME:
-        candidateDatabase = arguments.DATABASENAME
-        searchingWord = "Database = "
-        statement = "Database"
+        candidateValue = arguments.DATABASENAME
 
-        #Call function FindString
-        FindString(foundFile, searchingWord)
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("Database", 3)
 
-        #Call function named ModifyFile
-        ModifyFile(foundFile, searchingWord, candidateDatabase, statement)
+        #Call function ConfigureValues
+        ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
     
     #Session log section
     if arguments.SESSIONLOG:
-        candidateSessionLog = arguments.SESSIONLOG
-        searchingWord = "SessionLog = "
-        statement = "Session Log"
+        candidateValue = arguments.SESSIONLOG
 
-        #Call function FindString
-        FindString(foundFile, searchingWord)
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("SessionLog", 2)
 
-        #Call function named ModifyFile
-        ModifyFile(foundFile, searchingWord, candidateSessionLog, statement)
+        #Call function ConfigureValues
+        ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
 
     #Poisoners log section
     if arguments.POISONERSLOG:
-        candidatePoisonersLog = arguments.POISONERSLOG
-        searchingWord = "PoisonersLog = "
-        statement= "Poisoners Log"
+        candidateValue = arguments.POISONERSLOG
 
-        #Call function FindString
-        FindString(foundFile, searchingWord)
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("PoisonersLog", 2)
 
-        #Call function named ModifyFile
-        ModifyFile(foundFile, searchingWord, candidatePoisonersLog, statement)
+        #Call function ConfigureValues
+        ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
 
     #Analyze mode log section
     if arguments.ANALYZELOG:
-        candidateAnlyzeLog = arguments.ANALYZELOG
-        searchingWord = "AnalyzeLog = "
-        statement= "Analyze Mode Log"
+        candidateValue = arguments.ANALYZELOG
 
-        #Call function FindString
-        FindString(foundFile, searchingWord)
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("AnalyzeLog", 2)
 
-        #Call function named ModifyFile
-        ModifyFile(foundFile, searchingWord, candidateAnlyzeLog, statement)
+        #Call function ConfigureValues
+        ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
 
     #Config Dump log section
     if arguments.CONFIGDUMPLOG:
-        candidateConfigDumpLog = arguments.CONFIGDUMPLOG
-        searchingWord = "ResponderConfigDump = "
-        statement= "Responder Config Dump Log"
+        candidateValue = arguments.CONFIGDUMPLOG
 
-        #Call function FindString
-        FindString(foundFile, searchingWord)
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("ResponderConfigDump", 2)
 
-        #Call function named ModifyFile
-        ModifyFile(foundFile, searchingWord, candidateConfigDumpLog, statement)
+        #Call function ConfigureValues
+        ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
+
+    #SQL Server section
+    if arguments.SQLSWITCH:
+        candidateServer = arguments.SQLSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("SQL", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+
+    #SMB Server section
+    if arguments.SMBSWITCH:
+        candidateServer = arguments.SMBSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("SMB", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+
+    #RDP Server section
+    if arguments.RDPSWITCH:
+        candidateServer = arguments.RDPSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("RDP", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+
+    #Kerberos Server section
+    if arguments.KERBEROSSWITCH:
+        candidateServer = arguments.KERBEROSSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("Kerberos", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+    
+    #FTP Server section
+    if arguments.FTPSWITCH:
+        candidateServer = arguments.FTPSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("FTP", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+    
+    #POP Server section
+    if arguments.POPSWITCH:
+        candidateServer = arguments.POPSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("POP", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+
+    #SMTP Server section
+    if arguments.SMTPSWITCH:
+        candidateServer = arguments.SMTPSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("SMTP", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+    
+    #IMAP Server section
+    if arguments.IMAPSWITCH:
+        candidateServer = arguments.IMAPSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("IMAP", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+    
+    #HTTP Server section
+    if arguments.HTTPSWITCH:
+        candidateServer = arguments.HTTPSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("HTTP", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+    
+    #HTTPS Server section
+    if arguments.HTTPSSWITCH:
+        candidateServer = arguments.HTTPSSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("HTTPS", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])   
+    
+    #DNS Server section
+    if arguments.DNSSWITCH:
+        candidateServer = arguments.DNSSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("DNS", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+
+    #LDAP Server section
+    if arguments.LDAPSWITCH:
+        candidateServer = arguments.LDAPSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("LDAP", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+
+    #DCERPC Server section
+    if arguments.DCERPCSWITCH:
+        candidateServer = arguments.DCERPCSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("DCERPC", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])    
+    
+    #WINRM Server section
+    if arguments.WINRMSWITCH:
+        candidateServer = arguments.WINRMSWITCH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("WINRM", 1)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
 
 if __name__ == "__main__":
     main()
