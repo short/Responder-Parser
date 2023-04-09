@@ -10,9 +10,7 @@ Responder's python parsing tool.
  - settings.py
  - Responder.db
 
-### Execution Privileges 
- - Adminitrator
- - root 
+<b> Needs Administrator/root privileges to execute it </b>
 
 ## License
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -125,6 +123,8 @@ sudo python Responder-Parser.py -c 1122334455667788 --cleardb -m WIN10-TEST.CORP
 ```
 
 ![Alt text](/Pictures/Responder-Parser-Example.png "Responder-Parser Example")
+
+-> Overcome:
 
 ![Alt text](/Pictures/Responder-Parser-Example-Results.png "Responder-Parser Example Results")
 
