@@ -31,7 +31,7 @@ Responder's python parsing tool.
 
 ### Requirement
 
-> :information_desk_person: **Required Dependencies: None.**
+> :information_desk_person: **Required Dependencies: None**
 
 ## Usage
 
