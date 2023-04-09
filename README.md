@@ -10,6 +10,10 @@ Responder's python parsing tool.
  - settings.py
  - Responder.db
 
+### Execution Privileges 
+ - Adminitrator
+ - root 
+
 ## License
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -117,6 +121,8 @@ In the follwoing example Responder-Parser tries to:
 - Set SMB Server ON
 
 ```
-python Responder-Parser.py -c 1122334455667788 --cleardb -m WIN10-TEST.CORP.LOCAL -d corp.local -b --smtp off --smb on
+sudo python Responder-Parser.py -c 1122334455667788 --cleardb -m WIN10-TEST.CORP.LOCAL -d corp.local -b --smtp off --smb on
 ```
+
+
 
