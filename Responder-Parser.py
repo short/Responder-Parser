@@ -7,7 +7,7 @@
 
 import argparse
 from platform import system
-from os import walk, path, remove
+from os import walk, path, remove, getcwd
 from shutil import copyfile
 from sys import exit, argv
 
@@ -86,6 +86,7 @@ def Arguments(argv):
     #check the number of arguments
     if len(argv) == 1:
         parser.print_help()
+        print("\n")
         exit(1)
 
     return args
@@ -132,7 +133,15 @@ def SearchFile(myOS, file):
                     foundFile = path.join(root, file)
                 
         case "windows":
-            foundFile = "test"
+            #Exfiltrate local drive sumbol
+            currentDirectory = getcwd().split(":")
+            localDrive  = currentDirectory[0] + ":\\"
+
+            for root, diis, files in walk(localDrive):
+                if file in files:
+                    foundFileFlag = True
+                    foundFile = path.join(root, file)
+                    #print(foundFile)
         case _:
           foundFile = "not supported"
           print("[!] Not supported operating system...\n")
