@@ -124,5 +124,8 @@ In the follwoing example Responder-Parser tries to:
 sudo python Responder-Parser.py -c 1122334455667788 --cleardb -m WIN10-TEST.CORP.LOCAL -d corp.local -b --smtp off --smb on
 ```
 
+![Alt text](/Pictures/Responder-Parser-Example.png "Responder-Parser Example")
+
+![Alt text](/Pictures/Responder-Parser-Example-Results.png "Responder-Parser Example Results")
 
 
