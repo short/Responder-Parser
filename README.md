@@ -10,7 +10,7 @@ Responder's python parsing tool.
  - settings.py
  - Responder.db
 
-> :warning: **Needs Administrator/root privileges to execute Responder-Parser!**
+> :warning: **Needs Administrator/root privileges**: to execute Responder-Parser.
 
 ## License
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
