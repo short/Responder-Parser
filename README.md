@@ -108,7 +108,7 @@ options:
 
 In the follwoing example Responder-Parser tries to:
 
-- Set cahllange to 1122334455667788
+- Set challenge to 1122334455667788
 - Clear Responder.db
 - Set machine name to WIN10-TEST.CORP.LOCAL
 - Set domain name to corp.local
