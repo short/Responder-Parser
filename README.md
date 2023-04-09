@@ -29,9 +29,10 @@ Responder's python parsing tool.
 - ##### Windows
 - ##### Linux
 
-### Requirement
+### Requirements
 
 > :information_desk_person: **Required Dependencies: None**
+<br />
 
 ## Usage
 
