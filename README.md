@@ -10,7 +10,7 @@ Responder's python parsing tool.
  - settings.py
  - Responder.db
 
-> :warning: **Needs Administrator/root privileges**: to execute Responder-Parser.
+> :warning: **Needs Administrator/Root privileges**: to execute Responder-Parser.
 
 ## License
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -121,6 +121,7 @@ In the follwoing example Responder-Parser tries to:
 ```
 sudo python Responder-Parser.py -c 1122334455667788 --cleardb -m WIN10-TEST.CORP.LOCAL -d corp.local -b --smtp off --smb on
 ```
+### Execution:
 
 ![Alt text](/Pictures/Responder-Parser-Example.png "Responder-Parser Example")
 
