@@ -114,8 +114,9 @@ In the follwoing example Responder-Parser tries to:
 - Set domain name to corp.local
 - Keep backup of files likes settings.py, Responder.conf, Responder.db
 - Set STMP Server OFF
+- Set SMB Server ON
 
 ```
-python Responder-Parser.py -c 1122334455667788 --cleardb -m WIN10-TEST.CORP.LOCAL -d corp.local -b --smtp off
+python Responder-Parser.py -c 1122334455667788 --cleardb -m WIN10-TEST.CORP.LOCAL -d corp.local -b --smtp off --smb on
 ```
 
