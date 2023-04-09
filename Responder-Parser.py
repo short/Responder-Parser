@@ -137,10 +137,12 @@ def SearchFile(myOS, file):
             currentDirectory = getcwd().split(":")
             localDrive  = currentDirectory[0] + ":\\"
 
-            for root, diis, files in walk(localDrive):
-                if file in files:
-                    foundFileFlag = True
-                    foundFile = path.join(root, file)
+            #Search file starting from local drive
+            for root, dir, files in walk(localDrive):
+                if "Responder" in root:
+                    if file in files:
+                        foundFileFlag = True
+                        foundFile = path.join(root, file)
                     #print(foundFile)
         case _:
           foundFile = "not supported"
