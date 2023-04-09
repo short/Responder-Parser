@@ -104,3 +104,18 @@ options:
   --sslcert SSLCERT     set SSL Certificate for HTTPS to Responder conf
   --sslkey SSLKEY       set SSL Key for HTTPS Server to Responder conf
 ```
+## Examples
+
+In the follwoing example Responder-Parser tries to:
+
+- Set cahllange to 1122334455667788
+- Clear Responder.db
+- Set machine name to WIN10-TEST.CORP.LOCAL
+- Set domain name to corp.local
+- Keep backup of files likes settings.py, Responder.conf, Responder.db
+- Set STMP Server OFF
+
+```
+python Responder-Parser.py -c 1122334455667788 --cleardb -m WIN10-TEST.CORP.LOCAL -d corp.local -b --smtp off
+```
+
