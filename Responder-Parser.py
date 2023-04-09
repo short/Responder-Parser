@@ -8,6 +8,7 @@
 import argparse
 from platform import system
 from os import walk, path, remove
+from shutil import copyfile
 from sys import exit, argv
 
 #Global variables
@@ -38,12 +39,15 @@ Please visit {} for more...
 def Arguments(argv):
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, prog="Responder-Parser", usage='%(prog)s [options]')
 
+    parser.add_argument('--cleardb', action='store_true', required=False, help="clear Responder.db data")
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0.0')
+    parser.add_argument('-b', '--backup', action='store_true', required=False, help="keep backup of Responder.conf, settings.py and Responder.db")
     parser.add_argument('-c', '--challenge', type=str, dest='NUMBER', required=False, help="set challenge to Repsonder conf")
     parser.add_argument('-m', '--machinename', type=str, dest='MACHINENAME', required=False, help="set machine name to settings.py")
     parser.add_argument('-d', '--domain', type=str, dest='DOMAIN', required=False, help="set domain name to settings.py")
     parser.add_argument('-u', '--username', type=str, dest='USERNAME', required=False, help="set username to settings.py")
-    parser.add_argument('--cleardb', action='store_true', required=False, help="clear Responder.db data")
+    parser.add_argument('--dhcp', type=str, dest='HOSTNAME', required=False, help="set DHCP Hostname to settings.py")
+    parser.add_argument('--rpcport', type=int, dest='PORT', required=False, help="set RPC port to settings.py")
     parser.add_argument('--sql', type=str, dest='SQLSWITCH', required=False, help="set SQL server ON/OFF to Responder conf")
     parser.add_argument('--smb', type=str, dest='SMBSWITCH', required=False, help="set SMB server ON/OFF to Responder conf")
     parser.add_argument('--rdp', type=str, dest='RDPSWITCH', required=False, help="set RDP server ON/OFF to Responder conf")
@@ -63,8 +67,19 @@ def Arguments(argv):
     parser.add_argument('--poisonlog', type=str, dest='POISONERSLOG', required=False, help="set Poisoners log file to Responder conf")
     parser.add_argument('--analyzelog', type=str, dest='ANALYZELOG', required=False, help="set Analyze mode log file to Responder conf")
     parser.add_argument('--configdumplog', type=str, dest='CONFIGDUMPLOG', required=False, help="set Confing Dump log file to Responder conf")
-    parser.add_argument('--sslcert', type=str, dest='SSLCERT', required=False, help="set SSL Certificate to Responder conf")
-    parser.add_argument('--sslkey', type=str, dest='SSLKEY', required=False, help="set SSL Key to Responder conf")
+    parser.add_argument('--autoignore', type=str, dest='AUTOIGNORE', required=False, help="set option AutoIgnoreAfterSuccess ON/OFF to Responder conf")
+    parser.add_argument('--capturemulticreds', type=str, dest='CAPTUREMULTICREDS', required=False, help="set option CaptureMultipleCredentials ON/OFF to Responder conf")
+    parser.add_argument('--capturemultihash', type=str, dest='CAPTUREMULTIHASH', required=False, help="set option CaptureMultipleHashFromSameHost ON/OFF to Responder conf")
+    parser.add_argument('--servealways', type=str, dest='SERVEALWAYS', required=False, help="set option Serve-Always for HTTP Server ON/OFF to Responder conf")
+    parser.add_argument('--serveexe', type=str, dest='SERVEEXE', required=False, help="set option Serve-Exe for HTTP Server ON/OFF to Responder conf")
+    parser.add_argument('--servehtml', type=str, dest='SERVEHTML', required=False, help="set option Serve-Html for HTTP Server ON/OFF to Responder conf")
+    parser.add_argument('--htmlfilename', type=str, dest='HTMLFILENAME', required=False, help="set HtmlFilename file for HTTP Server to Responder conf")
+    parser.add_argument('--exefilename', type=str, dest='EXEFILENAME', required=False, help="set ExeFilename file for HTTP Server to Responder conf")
+    parser.add_argument('--exedownloadname', type=str, dest='EXEDOWNLOADNAME', required=False, help="set ExeDownloadName file for HTTP Server to Responder conf")
+    #parser.add_argument('--wpadscript', type=str, dest='WPADSCRIPT', required=False, help="set WPADScript file for HTTP Server to Responder conf")
+    #parser.add_argument('--htmltoinject', type=str, dest='HTMLTOINJECT', required=False, help="set HTMLToInject file for HTTP Server to Responder conf")
+    parser.add_argument('--sslcert', type=str, dest='SSLCERT', required=False, help="set SSL Certificate for HTTPS to Responder conf")
+    parser.add_argument('--sslkey', type=str, dest='SSLKEY', required=False, help="set SSL Key for HTTPS Server to Responder conf")
 
     args = parser.parse_args()
 
@@ -169,7 +184,7 @@ def ModifyFileWithTab(foundFile, searchingWord, candidateValue, statement):
         with open(foundFile, 'r') as file:
             fileContents = file.readlines()
         
-        fileContents[lineNumber - 1] = searchingWord + "=   '" + candidateValue + "'" + "\n"
+        fileContents[lineNumber - 1] = searchingWord + " =   '" + candidateValue + "'" + "\n"
 
         #Modify changes
         with open(foundFile, 'w') as file:
@@ -212,14 +227,6 @@ def ConfigureString(keyword, optionNumber):
             statement =  keyword + " Server"
         case 2:
             statement =  keyword
-        case 3:
-            statement = "Database"
-        case 4:
-            statement = "Challenge"
-        case 5:
-            statement = "SSLCert"
-        case 6:
-            statement = "SSLKey"
     
     return searchingWord, statement
 
@@ -255,6 +262,24 @@ def DetermineChallenge(candidateValue):
         print("[!] The challenge must be exactly 16 chars long.\n\nExample: 1122334455667788\n")
         exit(1) 
 
+#DeterminePortRange
+def DeterminePortRange(candidateValue):
+    #Determine if the candidate value is betwwen the range 45000 and 49999
+    if candidateValue < 45000 or candidateValue > 49999:
+        print("[!] The RPC Port must be between the ranges 45000 and 49999\n")
+        exit(1)
+
+#KeepBackup function
+def KeepBackup(foundFile, statement):
+    #Set backup filenames
+    foundFileBackup = foundFile + ".bak"
+
+    #Copy values to backup files
+    copyfile(foundFile, foundFileBackup)
+
+    #Print success message
+    print("[+] Backup for " + foundFile + " saved to: " + foundFileBackup + "\n")
+
 #main function
 def main():
     #Call function named Arguments
@@ -274,10 +299,23 @@ def main():
     #Call function named SearchFile
     foundFileSettings = SearchFile(foundOS, "settings.py")
 
+    #If backup argument is enabled keep backup
+    if arguments.backup:
+        #Call function named KeepBackup
+        KeepBackup(foundFile, "Responder.conf")
+
+        #Call function named KeepBackup
+        KeepBackup(foundFileSettings, "Settings.py")
+
     #Clear DB section
     if arguments.cleardb:
         #Call function named SearchFile
         foundFileDB = SearchFile(foundOS, "Responder.db")
+
+        #If backup argument is enabled keep backup
+        if arguments.backup:
+            #Call function named KeepBackup
+            KeepBackup(foundFileDB, "Responder.db")
 
         #delete Responder.db
         remove(foundFileDB)
@@ -314,6 +352,47 @@ def main():
         #Call function ConfigureValues
         ConfigureValuesWithTab(foundFileSettings, configuredStringsWithTab[0], candidateValue, configuredStringsWithTab[1])
 
+    #DHCP Hostname Section
+    if arguments.HOSTNAME:
+        candidateValue = arguments.HOSTNAME
+
+        #Call function named ConfigureString
+        configuredStringsWithTab = ConfigureStringWithTab("self.DHCPHostname")
+
+        #Call function ConfigureValues
+        ConfigureValuesWithTab(foundFileSettings, configuredStringsWithTab[0], candidateValue, configuredStringsWithTab[1])
+
+    #RPC Port Section
+    if arguments.PORT:
+        candidateValue = arguments.PORT
+
+        #Call function DeterminePortRange
+        DeterminePortRange(candidateValue)
+
+        #Call function named ConfigureString
+        configuredStringsWithTab = ConfigureStringWithTab("self.RPCPort")
+
+        #Call function FindString
+        FindString(foundFileSettings, configuredStringsWithTab[0])
+
+        #Read file and find line
+        with open(foundFileSettings, 'r') as file:
+            for index, line in enumerate(file):
+                if configuredStringsWithTab[0] in line:
+                    lineNumber = index + 1
+
+        #Read file and save tha value to specific line
+        with open(foundFileSettings, 'r') as file:
+            fileContents = file.readlines()
+        
+        fileContents[lineNumber - 1] = configuredStringsWithTab[0] + " =   " + str(candidateValue) + "\n"
+
+        #Modify changes
+        with open(foundFileSettings, 'w') as file:
+            file.writelines(fileContents)
+
+        print("[+] " + configuredStringsWithTab[1] + " has been set to " + "'" + str(candidateValue) + "'" + " in " + foundFileSettings + "...\n")
+
     #Challenge section
     if arguments.NUMBER:
         candidateValue = arguments.NUMBER
@@ -322,7 +401,7 @@ def main():
         DetermineChallenge(candidateValue)
 
         #Call function named ConfigureString
-        configuredStrings = ConfigureString("Challenge", 4)
+        configuredStrings = ConfigureString("Challenge", 2)
 
         #Call function ConfigureValues
         ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
@@ -332,7 +411,7 @@ def main():
         candidateValue = arguments.SSLCERT
 
         #Call function named ConfigureString
-        configuredStrings = ConfigureString("SSLCert", 5)
+        configuredStrings = ConfigureString("SSLCert", 2)
 
         #Call function ConfigureValues
         ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
@@ -342,7 +421,7 @@ def main():
         candidateValue = arguments.SSLKEY
 
         #Call function named ConfigureString
-        configuredStrings = ConfigureString("SSLKey", 6)
+        configuredStrings = ConfigureString("SSLKey", 2)
 
         #Call function ConfigureValues
         ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
@@ -352,7 +431,7 @@ def main():
         candidateValue = arguments.DATABASENAME
 
         #Call function named ConfigureString
-        configuredStrings = ConfigureString("Database", 3)
+        configuredStrings = ConfigureString("Database", 2)
 
         #Call function ConfigureValues
         ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
@@ -396,6 +475,96 @@ def main():
 
         #Call function ConfigureValues
         ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
+
+    #HtmlFilename section
+    if arguments.HTMLFILENAME:
+        candidateValue = arguments.HTMLFILENAME
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("HtmlFilename", 2)
+
+        #Call function ConfigureValues
+        ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
+
+    #ExeFilename section
+    if arguments.EXEFILENAME:
+        candidateValue = arguments.EXEFILENAME
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("ExeFilename", 2)
+
+        #Call function ConfigureValues
+        ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
+
+    #ExeDownloadName section
+    if arguments.EXEDOWNLOADNAME:
+        candidateValue = arguments.EXEDOWNLOADNAME
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("ExeDownloadName", 2)
+
+        #Call function ConfigureValues
+        ConfigureValues(foundFile, configuredStrings[0], candidateValue, configuredStrings[1])
+    
+    #AutoIgnoreAfterSuccess section
+    if arguments.AUTOIGNORE:
+        candidateServer = arguments.AUTOIGNORE
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("AutoIgnoreAfterSuccess", 2)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+
+    #CaptureMultipleCredentials section
+    if arguments.CAPTUREMULTICREDS:
+        candidateServer = arguments.CAPTUREMULTICREDS
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("CaptureMultipleCredentials", 2)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+
+    #CaptureMultipleHashFromSameHost section
+    if arguments.CAPTUREMULTIHASH:
+        candidateServer = arguments.CAPTUREMULTIHASH
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("CaptureMultipleHashFromSameHost", 2)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+    
+    #Serve-Always section
+    if arguments.SERVEALWAYS:
+        candidateServer = arguments.SERVEALWAYS
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("Serve-Always", 2)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+    
+    #Serve-Exe section
+    if arguments.SERVEEXE:
+        candidateServer = arguments.SERVEEXE
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("Serve-Exe", 2)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
+
+    #Serve-Html section
+    if arguments.SERVEHTML:
+        candidateServer = arguments.SERVEHTML
+
+        #Call function named ConfigureString
+        configuredStrings = ConfigureString("Serve-Html", 2)
+
+        #Call function named ConfigureOnOff
+        ConfigureOnOff(foundFile, configuredStrings[0], candidateServer, configuredStrings[1])
 
     #SQL Server section
     if arguments.SQLSWITCH:
