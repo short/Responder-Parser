@@ -10,6 +10,8 @@ Responder's python parsing tool.
  - settings.py
  - Responder.db
 
+## Privileges
+
 > :warning: **Needs Administrator/Root privileges**: to execute Responder-Parser.
 
 ## License
